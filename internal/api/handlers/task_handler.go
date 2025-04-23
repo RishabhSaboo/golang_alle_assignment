@@ -101,3 +101,32 @@ func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent) // No content to return
 }
+
+// ListTasks handles GET /tasks — returns a list of tasks
+func (h *TaskHandler) ListTasks(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+
+	// Parse page and per_page (default: page=1, perPage=10)
+	page, _ := strconv.Atoi(query.Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	perPage, _ := strconv.Atoi(query.Get("per_page"))
+	if perPage < 1 {
+		perPage = 10
+	}
+
+	// Filter by status if provided
+	filter := models.TaskFilter{
+		Status: query.Get("status"),
+	}
+
+	tasks, err := h.service.ListTasks(page, perPage, filter)
+	if err != nil {
+		http.Error(w, "Could not fetch tasks", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tasks)
+}

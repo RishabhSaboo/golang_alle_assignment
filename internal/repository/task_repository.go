@@ -66,3 +66,36 @@ func (r *InMemoryTaskRepository) GetByID(id string) (*models.Task, error) {
 	return &task, nil
 }
 
+// Update modifies an existing task
+func (r *InMemoryTaskRepository) Update(task *models.Task) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if task == nil {
+		return errors.New("task is nil")
+	}
+
+	_, exists := r.tasks[task.ID]
+	if !exists {
+		return errors.New("task not found")
+	}
+
+	task.UpdatedAt = time.Now()
+	r.tasks[task.ID] = *task
+
+	return nil
+}
+
+// Delete removes a task by ID
+func (r *InMemoryTaskRepository) Delete(id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	_, exists := r.tasks[id]
+	if !exists {
+		return errors.New("task not found")
+	}
+
+	delete(r.tasks, id)
+	return nil
+}

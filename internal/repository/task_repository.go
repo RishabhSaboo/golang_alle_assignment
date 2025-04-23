@@ -86,6 +86,55 @@ func (r *InMemoryTaskRepository) Update(task *models.Task) error {
 	return nil
 }
 
+// List returns a paginated and optionally filtered list of tasks
+func (r *InMemoryTaskRepository) List(page, perPage int, filter models.TaskFilter) (*models.TaskPage, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var filteredTasks models.Tasks
+	for _, task := range r.tasks {
+		// Apply status filter if specified
+		if filter.Status != "" && task.Status != filter.Status {
+			continue
+		}
+		filteredTasks = append(filteredTasks, task)
+	}
+
+	totalCount := len(filteredTasks)
+
+	// Handle invalid pagination inputs
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 10
+	}
+
+	start := (page - 1) * perPage
+	end := start + perPage
+	if start >= totalCount {
+		return &models.TaskPage{
+			Tasks:      models.Tasks{},
+			TotalCount: totalCount,
+			Page:       page,
+			PerPage:    perPage,
+		}, nil
+	}
+	if end > totalCount {
+		end = totalCount
+	}
+
+	pagedTasks := filteredTasks[start:end]
+
+	return &models.TaskPage{
+		Tasks:      pagedTasks,
+		TotalCount: totalCount,
+		Page:       page,
+		PerPage:    perPage,
+	}, nil
+}
+
+
 // Delete removes a task by ID
 func (r *InMemoryTaskRepository) Delete(id string) error {
 	r.mu.Lock()

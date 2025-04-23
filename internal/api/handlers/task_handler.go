@@ -58,3 +58,46 @@ func (h *TaskHandler) GetTask(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(task)
 }
 
+// UpdateTask handles PUT /tasks/{id} — updates a task
+func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	var task models.Task
+	err := json.NewDecoder(r.Body).Decode(&task)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	task.ID = id // Set task ID from URL path
+
+	err = h.service.UpdateTask(&task)
+	if err != nil {
+		if err.Error() == "task not found" {
+			http.Error(w, "Task not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(task)
+}
+
+// DeleteTask handles DELETE /tasks/{id} — deletes a task
+func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+
+	err := h.service.DeleteTask(id)
+	if err != nil {
+		if err.Error() == "task not found" {
+			http.Error(w, "Task not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Could not delete task", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent) // No content to return
+}

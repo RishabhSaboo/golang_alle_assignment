@@ -91,6 +91,12 @@ func (s *DefaultTaskService) DeleteTask(id string) error {
 	return s.repo.Delete(id)
 }
 
+// ListTasks returns paginated and filtered task list
+func (s *DefaultTaskService) ListTasks(page, perPage int, filter models.TaskFilter) (*models.TaskPage, error) {
+	return s.repo.List(page, perPage, filter)
+}
+
+
 // isValidStatus checks if status is allowed
 func isValidStatus(status string) bool {
 	validStatuses := map[string]bool{

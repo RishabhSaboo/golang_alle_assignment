@@ -1,6 +1,9 @@
 # Task Management Microservice
 
 This is a simple **Task Management System** built in Go. It allows users to create, read, update, and delete tasks. The system is designed as a microservice with clear separation of concerns.
+The application uses in-memory storage for tasks but can be easily extended to use a database if needed. 
+It supports pagination and filtering of tasks, allowing users to efficiently interact with task data.
+
 ## Setup
 
 ### Prerequisites

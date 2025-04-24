@@ -17,7 +17,8 @@ go build -o task-service cmd/server/main.go
 ./task-service
 ```
 
-The service will start on port 8081 by default.
+**The service will start on port 8081 by default.**
+
 
 
 ## API Documentation
